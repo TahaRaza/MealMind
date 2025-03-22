@@ -23,5 +23,5 @@ Meal Mind is a recipe recommendation application designed to help users decide w
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/taharaza/meal-mind.git
+   git clone https://github.com/TahaRaza/MealMind.git
    cd meal-mind
