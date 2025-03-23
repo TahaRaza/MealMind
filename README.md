@@ -25,3 +25,18 @@ Meal Mind is a recipe recommendation application designed to help users decide w
    ```bash
    git clone https://github.com/TahaRaza/MealMind.git
    cd meal-mind
+2. **Install Dependencies:**
+
+Run the following command to install the necessary packages:
+```bash
+npm install redux-persist 
+@react-native-async-storage/async-storage 
+@react-navigation/native 
+@react-navigation/stack 
+react-native-gesture-handler 
+react-native-safe-area-context 
+react-native-vector-icons 
+@react-native-firebase/auth 
+@react-native-firebase/app 
+@react-native-google-signin/google-signin 
+@reduxjs/toolkit redux-persist react-redux
