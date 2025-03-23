@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,35 @@ import {
   ScrollView,
 } from 'react-native';
 import colors from '../styles/colors';
+import {useNavigation} from '@react-navigation/native';
+import {recipes} from '../constants/recipesData2'; // Import your recipes data
 
 const TodaysRecipe = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [history, setHistory] = useState([]);
+  const navigation = useNavigation();
+
+  const handleSearch = () => {
+    const matchingRecipes = recipes.filter(recipe =>
+      recipe.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+    console.log('Matching Recipes:', matchingRecipes); // Debug log
+    navigation.navigate('Results', {
+      matchingRecipes,
+      updateHistory: addToHistory,
+    });
+  };
+
+  const addToHistory = recipe => {
+    setHistory(prevHistory => {
+      // Avoid duplicates
+      if (!prevHistory.some(item => item.name === recipe.name)) {
+        return [recipe, ...prevHistory];
+      }
+      return prevHistory;
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.titlecontainer}>
@@ -18,31 +45,31 @@ const TodaysRecipe = () => {
         <TextInput
           style={styles.searchBar}
           placeholder="Search"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
           textAlign="left"
+          onSubmitEditing={handleSearch} // Trigger search on submit
         />
       </View>
       <View style={styles.historyContainer}>
         <View style={styles.historyClear}>
           <Text style={styles.sectionTitle}>History</Text>
-          <TouchableOpacity style={styles.clearButton}>
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={() => setHistory([])}>
             <Text style={styles.clearButtonText}>clear all</Text>
           </TouchableOpacity>
         </View>
         <ScrollView contentContainerStyle={styles.historyList}>
-          <View style={styles.historyItem}>
-            <Image
-              source={require('E:/MealMind/src/assets/images/CB.png')} // Replace with actual image URL
-              style={styles.historyImage}
-            />
-            <Text style={styles.historyText}>Chicken Biryani</Text>
-          </View>
-          <View style={styles.historyItem}>
-            <Image
-              source={require('E:/MealMind/src/assets/images/FF.png')} // Replace with actual image URL
-              style={styles.historyImage}
-            />
-            <Text style={styles.historyText}>French Fries</Text>
-          </View>
+          {history.map((recipe, index) => (
+            <View key={index} style={styles.historyItem}>
+              <Image
+                source={{uri: recipe.image}} // Assuming each recipe has an image URL
+                style={styles.historyImage}
+              />
+              <Text style={styles.historyText}>{recipe.name}</Text>
+            </View>
+          ))}
         </ScrollView>
       </View>
     </View>

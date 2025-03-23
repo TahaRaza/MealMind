@@ -1,20 +1,52 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, TextInput, StyleSheet, Image, Alert} from 'react-native';
 import CustomButton from '../components/CustomButton';
 import colors from '../styles/colors';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-
-// Configure Google Sign-In once at the top
-GoogleSignin.configure({
-  webClientId: 'AIzaSyC4gNjfLEet01F_dpJA_4SsBKsXHZxVYi8',
-});
+import {useDispatch} from 'react-redux';
+import {setUser} from '../redux/authSlice';
 
 const SignInScreen = ({route, navigation}) => {
-  const {username} = route.params || {username: 'Guest'};
+  // const { username } = route.params || { username: 'Guest' };
+  // const [email, setEmail] = useState('');
   const [email, setEmail] = useState('');
+  const dispatch = useDispatch();
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        '691846190946-7jvfb9dkhrhh6qj9iuk3k9o4lpu8hpbs.apps.googleusercontent.com',
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+    });
+  }, []);
+
+  // const handleLogin = async () => {
+  //   if (!email || !password) {
+  //     Alert.alert('Error', 'Please enter both email and password');
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const userCredential = await auth().signInWithEmailAndPassword(email, password);
+  //     // const user = userCredential.user;
+  //     // dispatch(setUser(user));
+  //     // const userData = {
+  //     //   name: userCredential.user.displayName || 'User', // Firebase might not return a name
+  //     //   setemail: userCredential.user.email,
+  //     // };
+  //     // dispatch(setUser(userData));
+  //     Alert.alert('Success', 'Logged in successfully');
+  //     navigation.navigate('Home');
+  //   } catch (error) {
+  //     Alert.alert('Login Failed', error.message);
+  //   }
+  //   setLoading(false);
+  // };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -23,27 +55,73 @@ const SignInScreen = ({route, navigation}) => {
     }
     setLoading(true);
     try {
-      await auth().signInWithEmailAndPassword(email, password);
+      const userCredential = await auth().signInWithEmailAndPassword(
+        email,
+        password,
+      );
+      const user = userCredential.user;
+
+      // Dispatch user info to Redux
+      dispatch(setUser({name: user.displayName || 'User', email: user.email}));
+
       Alert.alert('Success', 'Logged in successfully');
-      navigation.navigate('Home', {username});
+      navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     }
     setLoading(false);
   };
 
+  // const signInWithGoogle = async () => {
+  //   try {
+  //     // Check if your device supports Google Play
+  //     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  //     // Get the users ID token
+  //     const signInResult = await GoogleSignin.signIn();
+  //     const { data } = signInResult;
+
+  //     if (!data.idToken) {
+  //       throw new Error('No ID token found');
+  //     }
+
+  //     // Create a Google credential with the token
+  //     const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
+
+  //     // Sign-in the user with the credential
+  //     await auth().signInWithCredential(googleCredential);
+
+  //     console.log('User signed in with Google!');
+  //     Alert.alert('Success', 'Signed in with Google!');
+
+  //     // navigation.navigate('ChooseMember');
+  //   } catch (error) {
+  //     console.log('Google Sign-In Error:', error);
+  //   }
+  // };
+
   const signInWithGoogle = async () => {
     try {
-      await GoogleSignin.hasPlayServices();
-      const {idToken} = await GoogleSignin.signIn();
+      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+      const signInResult = await GoogleSignin.signIn();
+      const {idToken} = signInResult;
+
+      if (!data.idToken) {
+        throw new Error('No ID token found');
+      }
+
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      await auth().signInWithCredential(googleCredential);
-      console.log('Google Sign-In Successful');
+      const userCredential = await auth().signInWithCredential(
+        googleCredential,
+      );
+      const user = userCredential.user;
+
+      // Dispatch user info to Redux
+      dispatch(setUser({name: user.displayName || 'User', email: user.email}));
+
       Alert.alert('Success', 'Signed in with Google!');
       navigation.navigate('Home');
     } catch (error) {
-      Alert.alert('Google Sign-In Error', error.message);
-      console.error(error);
+      console.log('Google Sign-In Error:', error);
     }
   };
 
@@ -71,10 +149,21 @@ const SignInScreen = ({route, navigation}) => {
           onChangeText={setPassword}
           secureTextEntry
         />
+
         <CustomButton
           title={loading ? 'Signing in...' : 'SIGN IN'}
           style={styles.button}
           onPress={handleLogin}
+        />
+
+        <View style={styles.separator}>
+          <Text style={styles.separatorText}>OR</Text>
+        </View>
+
+        <CustomButton
+          title={loading ? 'Signing in...' : 'Sign in with Google'}
+          style={styles.button}
+          onPress={signInWithGoogle}
         />
         <Text style={styles.link} onPress={() => navigation.navigate('SignUp')}>
           DON'T HAVE AN ACCOUNT? SIGN UP
@@ -124,6 +213,16 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: '70%',
   },
+
+  separator: {
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  separatorText: {
+    color: colors.text,
+    fontSize: 16,
+  },
+
   link: {
     marginTop: 10,
     color: colors.text,

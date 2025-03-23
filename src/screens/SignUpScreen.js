@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,22 +8,100 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import '@react-native-firebase/app';
-import auth from '@react-native-firebase/auth';
+// import '@react-native-firebase/app';
+import auth, {
+  createUserWithEmailAndPassword,
+} from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import CustomButton from '../components/CustomButton';
+import {useDispatch} from 'react-redux';
+import {setUser} from '../redux/authSlice';
 import colors from '../styles/colors';
-
-// Configure Google Sign-In
-GoogleSignin.configure({
-  webClientId: 'AIzaSyC4gNjfLEet01F_dpJA_4SsBKsXHZxVYi8',
-});
 
 const SignUpScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
   const [username, setUsername] = useState('');
   const [isSelected, setSelection] = useState(false);
+  const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        '691846190946-7jvfb9dkhrhh6qj9iuk3k9o4lpu8hpbs.apps.googleusercontent.com',
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+    });
+  }, []);
+
+  // const handleSignUp = async () => {
+  //   console.log("1");
+  //   if (!email || !password || !name) {
+  //     Alert.alert.Alert.alert('Error', 'Please fill in all fields.');
+  //     return;
+  //   }
+  //   console.log("2");
+  //   if (!isPrivacyAccepted) {
+  //     Alert.alert.Alert.alert('Privacy Policy', 'You must accept the Privacy Policy.');
+  //     return;
+  //   }
+  //   console.log("3");
+  //   try {
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       email,
+  //       password,
+  //     );
+  //     console.log("4");
+  //     await userCredential.user.updateProfile({ displayName: name });
+  //     console.log("5");
+  //     Alert.alert.Alert.alert('Success', 'Account created successfully!');
+  //     console.log("6");
+  //     console.log('User registered:', userCredential.user);
+  //     console.log("7");
+  //     navigation.navigate('SignIn');
+  //   } catch (error) {
+  //     console.log("8");
+  //     Alert.alert.Alert.alert('Sign-Up Error', error.message);
+  //     console.log("9");
+  //     console.error('Error signing up:', error.message);
+  //     console.log("10");
+  //   }
+  // };
+
+  // const handleSignUp = async () => {
+  //   // Corrected condition to use 'username' instead of 'name'
+  //   if (!email || !password || !username) {
+  //     Alert.alert('Error', 'Please fill in all fields.');
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   // Corrected to check 'isSelected' instead of 'isPrivacyAccepted'
+  //   if (!isSelected) {
+  //     Alert.alert('Privacy Policy', 'You must accept the Privacy Policy.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const userCredential = await auth().createUserWithEmailAndPassword(
+  //       email,
+  //       password,
+  //     );
+  //     const userData = {
+  //       name: userCredential.user.displayName || 'User', // Firebase might not return a name
+  //       setemail: userCredential.user.email,
+  //     };
+  //     dispatch(setUser(userData));
+  //     // Corrected to use 'username' state variable
+  //     await userCredential.user.updateProfile({displayName: username});
+
+  //     Alert.alert('Success', 'Account created successfully!');
+  //     navigation.navigate('SignIn');
+  //   } catch (error) {
+  //     Alert.alert('Sign-Up Error', error.message);
+  //   }
+  //   setLoading(false);
+  // };
 
   const handleSignUp = async () => {
     if (!email || !password || !username) {
@@ -34,32 +112,51 @@ const SignUpScreen = ({navigation}) => {
       Alert.alert('Privacy Policy', 'You must accept the Privacy Policy.');
       return;
     }
+
+    // setLoading(true);
+
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(
         email,
         password,
       );
-      await userCredential.user.updateProfile({displayName: username});
+      const user = userCredential.user;
+      await user.updateProfile({displayName: username});
+
+      // Dispatch user info to Redux
+      dispatch(setUser({name: username, email: user.email}));
+
       Alert.alert('Success', 'Account created successfully!');
-      console.log('User registered:', userCredential.user);
-      navigation.navigate('SignIn', {username: username});
+      navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Sign-Up Error', error.message);
-      console.error('Error signing up:', error.message);
     }
+    // setLoading(false);
   };
 
   const signInWithGoogle = async () => {
     try {
-      await GoogleSignin.hasPlayServices();
-      const {idToken} = await GoogleSignin.signIn();
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      // Check if your device supports Google Play
+      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+      // Get the users ID token
+      const signInResult = await GoogleSignin.signIn();
+      const {data} = signInResult;
+
+      if (!data.idToken) {
+        throw new Error('No ID token found');
+      }
+
+      // Create a Google credential with the token
+      const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
+
+      // Sign-in the user with the credential
       await auth().signInWithCredential(googleCredential);
-      console.log('Google Sign-In Successful');
-      Alert.alert('Success', 'Signed in with Google!');
+
+      console.log('User signed in with Google!');
+      Alert.alert.Alert.alert('Success', 'Signed in with Google!');
+      navigation.navigate('SignIn');
     } catch (error) {
-      Alert.alert('Google Sign-In Error', error.message);
-      console.error(error);
+      console.log('Google Sign-In Error:', error);
     }
   };
 

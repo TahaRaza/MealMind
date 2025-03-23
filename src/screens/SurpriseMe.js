@@ -1,40 +1,46 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView, Image} from 'react-native';
 import colors from '../styles/colors';
+import {recipes} from '../constants/recipesData2'; // Adjust the path as needed
 
-const SurpriseMe = (navigation, route) => {
+const SurpriseMe = () => {
+  // Generate a random index between 0 and the length of the recipes array
+  const randomIndex = Math.floor(Math.random() * recipes.length);
+  // Get a random recipe using the random index
+  const randomRecipe = recipes[randomIndex];
+  console.log(randomRecipe);
+
+  const img = 'url:' + randomRecipe.image;
+  console.log(img);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Surprise Me</Text>
-      <Image
-        source={require('E:/MealMind/src/assets/images/CB.png')}
-        style={styles.image}
-      />
-      <Text style={styles.subtitle}>Chicken Biryani</Text>
-      <Text style={styles.heading}>INGREDIENTS</Text>
       <ScrollView style={styles.ingredientsList}>
-        <Text style={styles.ingredient}>• 3/2 cup Vegetable oil</Text>
-        <Text style={styles.ingredient}>• 3 Medium onions, chopped fine</Text>
-        <Text style={styles.ingredient}>
-          • 3 Cloves of Garlic, chopped fine
+        <Text style={styles.title}>Surprise Me</Text>
+        <Image source={{img}} style={styles.titleImg} />
+        <Text style={styles.subtitle}>{randomRecipe.name}</Text>
+
+        <Text style={styles.heading}>INGREDIENTS</Text>
+        {randomRecipe.ingredients.map((ingredient, index) => (
+          <Text key={index} style={styles.ingredient}>
+            • {ingredient.name} - {ingredient.quantity}
+          </Text>
+        ))}
+
+        <Text style={styles.heading}>RECIPE STEPS</Text>
+        {randomRecipe.recipeSteps.map((step, index) => (
+          <View key={index} style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{step.title}</Text>
+            {step.details.map((detail, detailIndex) => (
+              <Text key={detailIndex} style={styles.stepDetail}>
+                • {detail}
+              </Text>
+            ))}
+          </View>
+        ))}
+        <Text style={styles.heading}>ALLERGIES</Text>
+        <Text style={styles.allergies}>
+          {randomRecipe.allergies.join(', ')}
         </Text>
-        <Text style={styles.ingredient}>
-          • 1-inch piece of Ginger, chopped fine
-        </Text>
-        <Text style={styles.ingredient}>• 1/4 lb Boneless chicken</Text>
-        <Text style={styles.ingredient}>• 8 Brown Cardamom pods</Text>
-        <Text style={styles.ingredient}>• 1/2 teaspoon Turmeric</Text>
-        <Text style={styles.ingredient}>• 1/8 Whole Black Peppercorns</Text>
-        <Text style={styles.ingredient}>• 2 teaspoons Dried Coriander</Text>
-        <Text style={styles.ingredient}>• 2 teaspoons Garam Masala</Text>
-        <Text style={styles.ingredient}>• 2 teaspoons White poppy seeds</Text>
-        <Text style={styles.ingredient}>• 2 teaspoons Fresh lemon juice</Text>
-        <Text style={styles.ingredient}>• 3/2 teaspoons Cayenne Pepper</Text>
-        <Text style={styles.ingredient}>• 1/2 teaspoon Cumin</Text>
-        <Text style={styles.ingredient}>• 1/2 teaspoon Salt</Text>
-        <Text style={styles.ingredient}>• 2 teaspoons Tomato Paste</Text>
-        <Text style={styles.ingredient}>• 1 cup Water</Text>
-        <Text style={styles.ingredient}>• 3/4 cup Plain yogurt</Text>
       </ScrollView>
     </View>
   );
@@ -52,8 +58,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
-  image: {
-    width: '100%',
+  titleImg: {
+    alignSelf: 'center',
+    width: 300,
     height: 200,
     marginBottom: 10,
     borderRadius: 32,
@@ -73,12 +80,34 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   ingredientsList: {
-    hideScrollbar: true,
+    marginTop: 10,
   },
   ingredient: {
     fontSize: 14,
     marginVertical: 5,
     fontFamily: 'sans-serif',
+  },
+  stepsList: {
+    marginTop: 10,
+  },
+  stepContainer: {
+    marginBottom: 15,
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  stepDetail: {
+    fontSize: 14,
+    marginVertical: 2,
+    fontFamily: 'sans-serif',
+  },
+  allergies: {
+    fontSize: 14,
+    marginVertical: 5,
+    fontFamily: 'sans-serif',
+    color: 'red',
   },
 });
 

@@ -7,14 +7,24 @@ import {
   SafeAreaView,
 } from 'react-native';
 import colors from '../styles/colors';
+import {useSelector} from 'react-redux';
 
 const HomeScreen = ({route, navigation}) => {
-  const {username} = route.params || {username: 'Guest'};
+  // const { username } = route.params || { username: 'Guest' };
+
+  // const user = useSelector((state) => state.auth.user);
+  const user = useSelector(state => state.auth && state.auth.user);
+  // if (!user) {
+  //   return <Text>Loading...</Text>; // or handle it with a default value
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>Welcome, {username}!</Text>
+        s
+        <Text style={styles.title}>
+          Welcome, {user ? user.name : 'Guest'}!{' '}
+        </Text>
         <Text style={styles.title}>What is in your Meal Mind?</Text>
       </View>
       <View style={styles.optionsContainer}>
@@ -25,7 +35,7 @@ const HomeScreen = ({route, navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.box}
-          onPress={() => navigation.navigate('IngredientSelector')}>
+          onPress={() => navigation.navigate('ChooseMember')}>
           <Text style={styles.boxTxt}>Today’s Ingredients</Text>
         </TouchableOpacity>
         <TouchableOpacity

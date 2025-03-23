@@ -2,6 +2,7 @@ export const recipes = [
   {
     name: 'Chicken Biryani',
     cuisine: 'Pakistani',
+    image: '../assets/images/CB.png',
     ingredients: [
       'basmati rice',
       'chicken',

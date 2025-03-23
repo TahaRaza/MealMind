@@ -10,9 +10,9 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import colors from '../styles/colors';
-import {categories, allItems} from '../constants/ingredientData.js';
+import {categories, allItems} from '../constants/ingredientData2.js';
 import {useNavigation} from '@react-navigation/native';
-import {recipes} from '../constants/recipesData.js'; // Import your recipes data
+import {recipes} from '../constants/recipesData2.js'; // Import your recipes data
 
 const IngredientSelector = () => {
   const [activeCategory, setActiveCategory] = useState('Spices');
@@ -39,9 +39,9 @@ const IngredientSelector = () => {
   const handleSearchDishes = () => {
     const matchingRecipes = recipes.filter(recipe =>
       selectedItems.some(item =>
-        recipe.ingredients
-          .map(ingredient => ingredient.toLowerCase())
-          .includes(item.toLowerCase()),
+        recipe.ingredients.some(ingredient =>
+          ingredient.name.toLowerCase().includes(item.toLowerCase()),
+        ),
       ),
     );
     console.log('Matching Recipes:', matchingRecipes); // Debug log
